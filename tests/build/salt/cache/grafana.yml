@@ -1,0 +1,14 @@
+dashboard:
+  prometheus-performances_prometheus:
+    datasource: prometheus
+    format: json
+    template: prometheus/files/grafana_dashboards/prometheus_performances_prometheus.json
+  remote_storage_adapter_prometheus:
+    datasource: prometheus
+    format: json
+    template: prometheus/files/grafana_dashboards/remote_storage_adapter_prometheus.json
+  prometheus_stats_prometheus:
+    datasource: prometheus
+    format: json
+    template: prometheus/files/grafana_dashboards/prometheus_stats_prometheus.json
+

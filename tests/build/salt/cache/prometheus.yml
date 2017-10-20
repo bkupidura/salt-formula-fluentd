@@ -1,0 +1,13 @@
+
+server:
+  alert:
+
+    PrometheusTargetDown:
+      if: 'up != 1'
+      labels:
+        severity: critical
+        service: prometheus
+      annotations:
+        summary: 'Prometheus endpoint {{ $labels.instance }} is down'
+        description: 'Prometheus endpoint {{ $labels.instance }} is down for job {{ $labels.job }}'
+

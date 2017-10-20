@@ -1,0 +1,14 @@
+applications:
+  - fluentd
+classes:
+ - service.fluentd.support
+parameters:
+  _param:
+    prometheus_evaluation_interval: "15s"
+    prometheus_region_label: "region1"
+    prometheus_scrape_interval: "15s"
+    prometheus_storage_retention: "360h"
+    prometheus_storage_heap_size: 3221225472
+  fluentd:
+    agent:
+      enabled: true

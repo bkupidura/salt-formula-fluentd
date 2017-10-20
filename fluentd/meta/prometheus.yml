@@ -1,0 +1,79 @@
+{%- if pillar.prometheus is defined %}
+{%- from "prometheus/map.jinja" import server, alertmanager, remote_storage_adapter, monitoring with context %}
+server:
+  alert:
+{%- if server.get('enabled', False) %}
+{% raw %}
+    PrometheusTargetDown:
+      if: 'up != 1'
+      for: 2m
+      labels:
+        severity: critical
+        service: prometheus
+      annotations:
+        summary: 'Prometheus endpoint {{ $labels.instance }} down'
+        description: 'The Prometheus target {{ $labels.instance }} is down for the job {{ $labels.job }}.'
+    PrometheusRushMode:
+      if: 'prometheus_local_storage_rushed_mode != 0'
+      for: 10m
+      labels:
+        severity: warning
+        service: prometheus
+      annotations:
+        summary: 'Prometheus {{ $labels.instance }} in rush mode'
+        description: 'The Prometheus {{ $labels.instance }} is in rush mode for 10m.'
+{% endraw %}
+{%- endif %}
+{%- if alertmanager.get('enabled', False) %}
+    AlertmanagerNotificationFailed:
+      {%- set threshold = monitoring.alertmanager.notification_failed_rate|float %}
+      if: >-
+        rate(alertmanager_notifications_failed_total[5m]) > {{ threshold }}
+      for: 2m
+{%- raw %}
+      labels:
+        severity: warning
+        service: alertmanager
+      annotations:
+        summary: 'Alertmanager {{ $labels.instance }} failed notifications'
+        description: 'Alertmanager {{ $labels.instance }} failed notifications for {{ $labels.integration }} (current value={{ $value }}, threshold={%- endraw %}{{ threshold }})'
+{%- endif %}
+{%- if server.get('config', {}).get('remote_write') %}
+    PrometheusRemoteStorageQueue:
+      {%- set threshold = monitoring.prometheus.remote_storage_queue_full_percent|float %}
+      if: >-
+        prometheus_remote_storage_queue_length / prometheus_remote_storage_queue_capacity * 100 > {{ threshold }}
+{%- raw %}
+      for: 2m
+      labels:
+        severity: warning
+        service: prometheus
+      annotations:
+        summary: 'Prometheus {{ $labels.instance }} remote storage queue is filling'
+        description: 'The Prometheus {{ $labels.instance }} remote storage queue almost full (current value={{ $value }}%, threshold={%- endraw %}{{ threshold }}%)'
+{%- endif %}
+{%- if remote_storage_adapter.get('enabled', False) %}
+    RemoteStorageAdapterSendingTooSlow:
+      {%- set threshold = monitoring.remote_storage_adapter.sent_vs_received_ratio|float %}
+      if: >-
+        100.0 - (100.0 * sent_samples_total{job="remote_storage_adapter"} / on (job, instance) received_samples_total) > {{ threshold }}
+{% raw %}
+      labels:
+        severity: warning
+        service: remote_storage_adapter
+      annotations:
+        summary: 'Remote storage adapter too slow on {{ $labels.instance }}'
+        description: 'Remote storage adapter can not ingest samples fast enough on {{ $labels.instance }} (current value={{ $value }}%, threshold={%- endraw %}{{ threshold }}%).'
+    RemoteStorageAdapterIgnoredTooHigh:
+      {%- set threshold = monitoring.remote_storage_adapter.ignored_vs_sent_ratio|float %}
+      if: >-
+        100.0 * prometheus_influxdb_ignored_samples_total{job="remote_storage_adapter"} / on (job, instance) sent_samples_total > {{ threshold }}
+{% raw %}
+      labels:
+        severity: warning
+        service: remote_storage_adapter
+      annotations:
+        summary: 'Remote storage adapter receiving too many invalid metrics on {{ $labels.instance }}'
+        description: 'Remote storage adapter is receiving too many invalid metrics on {{ $labels.instance }} (current value={{ $value }}%, threshold={%- endraw %}{{ threshold }}%).'
+{%- endif %}
+{%- endif %}
