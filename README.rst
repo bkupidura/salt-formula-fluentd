@@ -23,17 +23,17 @@
             - pattern: 'docker.**'
               type: file
               path: /tmp/flow-docker.log
-        test:
+        test_grok_pattern:
           source:
             - type tail
               path: /var/log/test
               tag: test.test
               parser:
                 type: grok
+                custom_pattern_path: /etc/td-agent/config.d/global.grok
                 rule:
                   - pattern: >-
                       %{KEYSTONEACCESS}
-                    custom_pattern_path: /etc/td-agent/config.d/global.grok
         syslog:
           source:
             - type: tail
