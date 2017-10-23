@@ -33,7 +33,7 @@
                 rule:
                   - pattern: >-
                       %{KEYSTONEACCESS}
-                    custom_pattern_path: /asd
+                    custom_pattern_path: /etc/td-agent/config.d/global.grok
         syslog:
           source:
             - type: tail

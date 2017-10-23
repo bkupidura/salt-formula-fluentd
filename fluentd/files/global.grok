@@ -1,0 +1,2 @@
+KEYSTONEACCESS (?:%{IPORHOST:clientip} %{USER} %{USER} \[%{HTTPDATE:timestamp}\] "(?:%{WORD:method} %{NOTSPACE:request}(?: HTTP/%{NUMBER:httpversion})?|%{DATA:rawrequest})" %{NUMBER:response} (?:%{NUMBER:bytes}|-))
+KEYSTONEERROR (?:%{TIMESTAMP_ISO8601:timestamp}%{SPACE}%{GREEDYDATA:message})

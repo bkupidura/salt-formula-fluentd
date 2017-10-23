@@ -46,6 +46,19 @@ fluentd_config_agent:
     - context:
       agent: {{ agent }}
 
+fluentd_grok_pattern_agent:
+  file.managed:
+    - name: {{ agent.dir.config }}/config.d/global.grok
+    - source: salt://fluentd/files/global.grok
+    - user: root
+    - group: root
+    - mode: 644
+    - template: jinja
+    - require:
+      - pkg: fluentd_packages_agent
+    - context:
+      agent: {{ agent }}
+
 {%- for name,values in agent.get('source', {}).iteritems() %}
 {%- if values is not mapping or values.get('enabled', True) %}
 
