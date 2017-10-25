@@ -59,15 +59,15 @@ fluentd_grok_pattern_agent:
     - context:
       agent: {{ agent }}
 
-{%- for name,values in agent.get('source', {}).iteritems() %}
+{%- for name,values in agent.get('input', {}).iteritems() %}
 {%- if values is not mapping or values.get('enabled', True) %}
 
-source_{{ name }}_agent:
+input_{{ name }}_agent:
   file.managed:
-    - name: {{ agent.dir.config }}/config.d/source-{{ name }}.conf
+    - name: {{ agent.dir.config }}/config.d/input-{{ name }}.conf
     - source:
-      - salt://fluentd/files/source/{{ values.type }}.conf
-      - salt://fluentd/files/source/generic.conf
+      - salt://fluentd/files/input/{{ values.type }}.conf
+      - salt://fluentd/files/input/generic.conf
     - user: root
     - group: root
     - mode: 644
@@ -116,14 +116,14 @@ filter_{{ name }}_agent:
 {%- endif %}
 {%- endfor %}
 
-{%- for name,values in agent.get('match', {}).iteritems() %}
+{%- for name,values in agent.get('output', {}).iteritems() %}
 {%- if values is not mapping or values.get('enabled', True) %}
 
-match_{{ name }}_agent:
+output_{{ name }}_agent:
   file.managed:
     - name: {{ agent.dir.config }}/config.d/match-{{ name }}.conf
     - source:
-      - salt://fluentd/files/match/{{ values.type }}.conf
+      - salt://fluentd/files/output/{{ values.type }}.conf
     - user: root
     - group: root
     - mode: 644

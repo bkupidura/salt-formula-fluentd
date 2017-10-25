@@ -19,12 +19,12 @@
             - pattern: 'docker.monitoring.{alertmanager,remote_storage_adapter,prometheus}.*'
               type: record_transformer
               remove_keys: log
-          match:
+          output:
             - pattern: 'docker.**'
               type: file
               path: /tmp/flow-docker.log
         test:
-          source:
+          input:
             - type tail
               path: /var/log/test
               tag: test.test
@@ -35,7 +35,7 @@
                       %{KEYSTONEACCESS}
                     custom_pattern_path: /etc/td-agent/config.d/global.grok
         syslog:
-          source:
+          input:
             - type: tail
               path: /var/log/syslog
               tag: syslog.syslog
@@ -93,7 +93,7 @@
                 - name: log_messages
                   type: counter
                   desc: The total number of log messages.
-          match:
+          output:
             - pattern: 'syslog.*'
               type: rewrite_tag_filter
               rule:
@@ -103,7 +103,7 @@
             - pattern: 'syslog.*.*'
               type: file
               path: /tmp/syslog
-      source:
+      input:
         prometheus:
           type: prometheus
         prometheus_monitor:
