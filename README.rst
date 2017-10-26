@@ -1,3 +1,33 @@
+.. code-block:: yaml
+
+  fluentd:
+    config:
+      label:
+        filename:
+          name: LABEL_NAME
+          input:
+            input_name:
+              params
+          filter:
+            filter_name:
+              params
+            filter_name2:
+              params
+          match
+            match_name:
+              params
+      input:
+        filename:
+          input_name:
+            params
+      filter:
+        filename:
+          filter_name:
+            params
+      match:
+        filename:
+          match_name:
+            params
 
 .. code-block:: yaml
 
