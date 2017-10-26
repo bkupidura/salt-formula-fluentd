@@ -9,7 +9,7 @@
           name: MONITORING
           filter:
             parse_log:
-              pattern: 'docker.monitoring.{alertmanager,remote_storage_adapter,prometheus}.*'
+              tag: 'docker.monitoring.{alertmanager,remote_storage_adapter,prometheus}.*'
               type: parser
               reserve_data: true
               key_name: log
@@ -19,12 +19,12 @@
                   /^time="(?<time>[^ ]*)" level=(?<severity>[a-zA-Z]*) msg="(?<message>.+?)"/
                 time_format: '%FT%TZ'
             remove_log_key:
-              pattern: 'docker.monitoring.{alertmanager,remote_storage_adapter,prometheus}.*'
+              tag: 'docker.monitoring.{alertmanager,remote_storage_adapter,prometheus}.*'
               type: record_transformer
               remove_keys: log
           match:
             docker_log:
-              pattern: 'docker.**'
+              tag: 'docker.**'
               type: file
               path: /tmp/flow-docker.log
         grok_example:
@@ -44,21 +44,21 @@
           name: SYSLOG
           filter:
             add_severity:
-              pattern: 'syslog.*'
+              tag: 'syslog.*'
               type: record_transformer
               enable_ruby: true
               record:
                 - name: severity
                   value: 'record["pri"].to_i - (record["pri"].to_i / 8).floor * 8'
             severity_to_string:
-              pattern: 'syslog.*'
+              tag: 'syslog.*'
               type: record_transformer
               enable_ruby: true
               record:
                 - name: severity
                   value: '{"debug"=>7,"info"=>6,"notice"=>5,"warning"=>4,"error"=>3,"critical"=>2,"alert"=>1,"emerg"=>0}.key(record["severity"])'
             severity_for_telegraf:
-              pattern: 'syslog.*.telegraf'
+              tag: 'syslog.*.telegraf'
               type: parser
               reserve_data: true
               key_name: message
@@ -68,14 +68,14 @@
                   /^(?<time>[^ ]*) (?<severity>[A-Z])! (?<message>.*)/
                 time_format: '%FT%TZ'
             severity_for_telegraf_string:
-              pattern: 'syslog.*.telegraf'
+              tag: 'syslog.*.telegraf'
               type: record_transformer
               enable_ruby: true
               record:
                 - name: severity
                   value: '{"debug"=>"D","info"=>"I","notice"=>"N","warning"=>"W","error"=>"E","critical"=>"C","alert"=>"A","emerg"=>"E"}.key(record["severity"])'
             prometheus_metric:
-              pattern: 'syslog.*.*'
+              tag: 'syslog.*.*'
               type: prometheus
               label:
                 - name: ident
@@ -90,14 +90,14 @@
                   desc: The total number of log messages.
           match:
             rewrite_tag_key:
-              pattern: 'syslog.*'
+              tag: 'syslog.*'
               type: rewrite_tag_filter
               rule:
                 - name: ident
                   regexp: '^(.*)'
                   result: '__TAG__.$1'
             syslog_log:
-              pattern: 'syslog.*.*'
+              tag: 'syslog.*.*'
               type: file
               path: /tmp/syslog
       input:
@@ -141,6 +141,6 @@
       match:
         docker_monitoring:
           docker_monitoring:
-            pattern: 'docker.monitoring.{alertmanager,remote_storage_adapter,prometheus}.*'
+            tag: 'docker.monitoring.{alertmanager,remote_storage_adapter,prometheus}.*'
             type: relabel
             label: MONITORING
