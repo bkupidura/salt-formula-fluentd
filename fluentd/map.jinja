@@ -1,4 +1,4 @@
-{% set agent = salt['grains.filter_by']({
+{% set fluentd = salt['grains.filter_by']({
   'Debian': {
     'pkgs': ['td-agent'],
     'gems': ['fluent-plugin-prometheus', 'fluent-plugin-grok-parser'],
@@ -8,4 +8,4 @@
       'config': '/etc/td-agent'
     },
   },
-}, merge=salt['pillar.get']('fluentd:agent')) %}
+}, merge=salt['pillar.get']('fluentd')) %}
