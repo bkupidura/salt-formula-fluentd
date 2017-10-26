@@ -13,16 +13,26 @@
               params
             filter_name2:
               params
-          match
+          match:
             match_name:
               params
       input:
         filename:
           input_name:
             params
+          input_name2:
+            params
+        filename2:
+          input_name3:
+            params
       filter:
         filename:
           filter_name:
+            params
+          filter_name2:
+            params
+        filename2:
+          filter_name3:
             params
       match:
         filename:
