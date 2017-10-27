@@ -4,7 +4,6 @@
     config:
       label:
         filename:
-          name: LABEL_NAME
           input:
             input_name:
               params
@@ -46,7 +45,6 @@
     config:
       label:
         monitoring:
-          name: MONITORING
           filter:
             parse_log:
               tag: 'docker.monitoring.{alertmanager,remote_storage_adapter,prometheus}.*'
@@ -68,7 +66,6 @@
               type: file
               path: /tmp/flow-docker.log
         grok_example:
-          name: GROK
           input:
             test_log:
               type: tail
@@ -81,7 +78,6 @@
                   - pattern: >-
                       %{KEYSTONEACCESS}
         syslog:
-          name: SYSLOG
           filter:
             add_severity:
               tag: 'syslog.*'
@@ -144,7 +140,7 @@
         syslog:
           syslog_log:
             type: tail
-            label: SYSLOG
+            label: syslog
             path: /var/log/syslog
             tag: syslog.syslog
             parser:
@@ -154,7 +150,7 @@
               time_format: '%FT%T.%L%:z'
           auth_log:
             type: tail
-            label: SYSLOG
+            label: syslog
             path: /var/log/auth.log
             tag: syslog.auth
             parser:
@@ -183,4 +179,4 @@
           docker_monitoring:
             tag: 'docker.monitoring.{alertmanager,remote_storage_adapter,prometheus}.*'
             type: relabel
-            label: MONITORING
+            label: monitoring
