@@ -1,6 +1,6 @@
-{%- if pillar.fluentd.agent %}
+{%- if pillar.fluentd %}
 include:
-  {%- if pillar.fluentd.agent is defined %}
+  {%- if pillar.fluentd is defined %}
   - fluentd.agent
   {%- endif %}
 {%- endif %}
