@@ -1,20 +1,20 @@
-{% from "fluentd/map.jinja" import agent with context %}
-{%- if agent.enabled %}
+{% from "fluentd/map.jinja" import fluentd with context %}
+{%- if fluentd.get('enabled', False) %}
 
 fluentd_packages_agent:
   pkg.installed:
-    - names: {{ agent.pkgs }}
+    - names: {{ fluentd.pkgs }}
 
 fluentd_gems_agent:
   gem.installed:
-    - names: {{ agent.gems }}
-    - gem_bin: {{ agent.gem_path }}
+    - names: {{ fluentd.gems }}
+    - gem_bin: {{ fluentd.gem_path }}
     - require:
       - pkg: fluentd_packages_agent
 
 fluentd_config_d_dir:
   file.directory:
-    - name: {{ agent.dir.config }}/config.d
+    - name: {{ fluentd.dir.config }}/config.d
     - makedirs: True
     - mode: 755
     - require:
@@ -31,11 +31,11 @@ fluentd_config_service:
     - require:
       - pkg: fluentd_packages_agent
     - context:
-      agent: {{ agent }}
+      fluentd: {{ fluentd }}
 
 fluentd_config_agent:
   file.managed:
-    - name: {{ agent.dir.config }}/td-agent.conf
+    - name: {{ fluentd.dir.config }}/td-agent.conf
     - source: salt://fluentd/files/td-agent.conf
     - user: root
     - group: root
@@ -44,11 +44,11 @@ fluentd_config_agent:
     - require:
       - pkg: fluentd_packages_agent
     - context:
-      agent: {{ agent }}
+      fluentd: {{ fluentd }}
 
 fluentd_grok_pattern_agent:
   file.managed:
-    - name: {{ agent.dir.config }}/config.d/global.grok
+    - name: {{ fluentd.dir.config }}/config.d/global.grok
     - source: salt://fluentd/files/global.grok
     - user: root
     - group: root
@@ -57,17 +57,16 @@ fluentd_grok_pattern_agent:
     - require:
       - pkg: fluentd_packages_agent
     - context:
-      agent: {{ agent }}
+      fluentd: {{ fluentd }}
 
-{%- for name,values in agent.get('input', {}).iteritems() %}
-{%- if values is not mapping or values.get('enabled', True) %}
+{%- set fluentd_config = fluentd.get('config', {}) %}
+{%- for name,values in fluentd_config.get('input', {}).iteritems() %}
 
 input_{{ name }}_agent:
   file.managed:
-    - name: {{ agent.dir.config }}/config.d/input-{{ name }}.conf
+    - name: {{ fluentd.dir.config }}/config.d/input-{{ name }}.conf
     - source:
-      - salt://fluentd/files/input/{{ values.type }}.conf
-      - salt://fluentd/files/input/generic.conf
+      - salt://fluentd/files/input/_generate.conf
     - user: root
     - group: root
     - mode: 644
@@ -85,17 +84,15 @@ input_{{ name }}_agent:
         values: {}
 {%- endif %}
 
-{%- endif %}
 {%- endfor %}
 
-{%- for name,values in agent.get('filter', {}).iteritems() %}
-{%- if values is not mapping or values.get('enabled', True) %}
+{%- for name,values in fluentd_config.get('filter', {}).iteritems() %}
 
 filter_{{ name }}_agent:
   file.managed:
-    - name: {{ agent.dir.config }}/config.d/filter-{{ name }}.conf
+    - name: {{ fluentd.dir.config }}/config.d/filter-{{ name }}.conf
     - source:
-      - salt://fluentd/files/filter/{{ values.type }}.conf
+      - salt://fluentd/files/filter/_generate.conf
     - user: root
     - group: root
     - mode: 644
@@ -113,17 +110,15 @@ filter_{{ name }}_agent:
         values: {}
 {%- endif %}
 
-{%- endif %}
 {%- endfor %}
 
-{%- for name,values in agent.get('output', {}).iteritems() %}
-{%- if values is not mapping or values.get('enabled', True) %}
+{%- for name,values in fluentd_config.get('match', {}).iteritems() %}
 
-output_{{ name }}_agent:
+omatch_{{ name }}_agent:
   file.managed:
-    - name: {{ agent.dir.config }}/config.d/match-{{ name }}.conf
+    - name: {{ fluentd.dir.config }}/config.d/match-{{ name }}.conf
     - source:
-      - salt://fluentd/files/output/{{ values.type }}.conf
+      - salt://fluentd/files/match/_generate.conf
     - user: root
     - group: root
     - mode: 644
@@ -141,17 +136,15 @@ output_{{ name }}_agent:
         values: {}
 {%- endif %}
 
-{%- endif %}
 {%- endfor %}
 
-{%- for name,values in agent.get('flow', {}).iteritems() %}
-{%- if values is not mapping or values.get('enabled', True) %}
+{%- for name,values in fluentd_config.get('label', {}).iteritems() %}
 
-flow_{{ name }}_agent:
+label_{{ name }}_agent:
   file.managed:
-    - name: {{ agent.dir.config }}/config.d/flow-{{ name }}.conf
+    - name: {{ fluentd.dir.config }}/config.d/label-{{ name }}.conf
     - source:
-      - salt://fluentd/files/flow.conf
+      - salt://fluentd/files/label.conf
     - user: root
     - group: root
     - mode: 644
@@ -169,12 +162,11 @@ flow_{{ name }}_agent:
         values: {}
 {%- endif %}
 
-{%- endif %}
 {%- endfor %}
 
 fluentd_service_agent:
   service.running:
-    - name: {{ agent.service_name }}
+    - name: {{ fluentd.service_name }}
     - enable: True
     {%- if grains.get('noservices') %}
     - onlyif: /bin/false
