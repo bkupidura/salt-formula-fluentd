@@ -138,11 +138,11 @@ omatch_{{ name }}_agent:
 
 {%- endfor %}
 
-{%- for name,values in fluentd_config.get('label', {}).iteritems() %}
+{%- for label_name,values in fluentd_config.get('label', {}).iteritems() %}
 
-label_{{ name }}_agent:
+label_{{ label_name }}_agent:
   file.managed:
-    - name: {{ fluentd.dir.config }}/config.d/label-{{ name }}.conf
+    - name: {{ fluentd.dir.config }}/config.d/label-{{ label_name }}.conf
     - source:
       - salt://fluentd/files/label.conf
     - user: root
@@ -155,7 +155,7 @@ label_{{ name }}_agent:
     - watch_in:
       - service: fluentd_service_agent
     - defaults:
-        name: {{ name }}
+        label_name: {{ label_name }}
 {%- if values is mapping %}
         values: {{ values }}
 {%- else %}
